@@ -87,16 +87,13 @@ if MONETAG_SCRIPT:
     MONETAG_SDK = _s.group(1) if _s else f"show_{MONETAG_ZONE}"
     if _u: MONETAG_SDK_URL = _u.group(1)
 
-# How long one ad verification stays valid, in seconds (default 6 hours)
-VERIFY_EXPIRE = int(os.environ.get("VERIFY_EXPIRE", "21600"))
-
 # Minimum seconds between opening the ad and finishing it (anti-cheat)
 MIN_AD_SECONDS = int(os.environ.get("MIN_AD_SECONDS", "8"))
 
 # Turned on only when both values are set
 AD_VERIFY = bool(WEBAPP_URL and MONETAG_ZONE)
 
-VERIFY_MSG = os.environ.get("VERIFY_MESSAGE", "ʜᴇʏ {first} 👋\n\n🔐 <b>Yᴏᴜʀ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ʜᴀꜱ ᴇxᴘɪʀᴇᴅ</b>\n\n1️⃣ Tᴀᴘ <b>✅ Vᴇʀɪꜰʏ Nᴏᴡ</b> ʙᴇʟᴏᴡ\n2️⃣ Wᴀᴛᴄʜ ᴛʜᴇ ꜱʜᴏʀᴛ ᴀᴅ ᴛɪʟʟ ɪᴛ ᴇɴᴅꜱ\n3️⃣ Yᴏᴜʀ ꜰɪʟᴇꜱ ᴡɪʟʟ ʙᴇ ꜱᴇɴᴛ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ\n\n⏳ Vᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜱᴛᴀʏꜱ ᴀᴄᴛɪᴠᴇ ꜰᴏʀ <b>{hours}</b>.\n\n<i>Nᴏᴛᴇ: ɪꜰ ᴛʜᴇ ᴀᴅ ᴅᴏᴇꜱɴ'ᴛ ʟᴏᴀᴅ, ᴄʜᴀɴɢᴇ ʏᴏᴜʀ ɴᴇᴛᴡᴏʀᴋ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ.</i>")
+VERIFY_MSG = os.environ.get("VERIFY_MESSAGE", "ʜᴇʏ {first} 👋\n\n🔐 <b>Wᴀᴛᴄʜ ᴀ ꜱʜᴏʀᴛ ᴀᴅ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ꜰɪʟᴇꜱ</b>\n\n1️⃣ Tᴀᴘ <b>✅ Vᴇʀɪꜰʏ Nᴏᴡ</b> ʙᴇʟᴏᴡ\n2️⃣ Wᴀᴛᴄʜ ᴛʜᴇ ꜱʜᴏʀᴛ ᴀᴅ ᴛɪʟʟ ɪᴛ ᴇɴᴅꜱ\n3️⃣ Yᴏᴜʀ ꜰɪʟᴇꜱ ᴡɪʟʟ ʙᴇ ꜱᴇɴᴛ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ\n\n<i>Nᴏᴛᴇ: ɪꜰ ᴛʜᴇ ᴀᴅ ᴅᴏᴇꜱɴ'ᴛ ʟᴏᴀᴅ, ᴄʜᴀɴɢᴇ ʏᴏᴜʀ ɴᴇᴛᴡᴏʀᴋ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ.</i>")
 #--------------------------------------------------------------------------#
 
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"

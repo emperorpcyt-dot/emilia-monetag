@@ -40,16 +40,9 @@ async def del_user(user_id: int):
 #----------------- AD VERIFICATION -----------------#
 import time
 
-async def is_verified(user_id: int) -> bool:
-    doc = verify_data.find_one({'_id': user_id})
-    return bool(doc) and doc.get('verified_until', 0) > time.time()
-
-async def set_verified(user_id: int, seconds: int):
-    verify_data.update_one(
-        {'_id': user_id},
-        {'$set': {'verified_until': time.time() + seconds}, '$unset': {'ad_started': ''}},
-        upsert=True
-    )
+async def clear_ad_started(user_id: int):
+    """One ad = one unlock: forget the ad start so it can't be reused."""
+    verify_data.update_one({'_id': user_id}, {'$unset': {'ad_started': ''}})
 
 async def set_pending(user_id: int, start_arg: str):
     """Remember which file link the user opened, so we can send it after the ad."""

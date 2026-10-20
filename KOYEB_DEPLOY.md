@@ -32,7 +32,6 @@ Upload this folder to a **private** GitHub repo.
 | `MONETAG_SDK` | SDK function, e.g. `show_10396377` (the `data-sdk` value) |
 | `MONETAG_SDK_URL` | optional, script link (default `//libtl.com/sdk.js`) |
 | `MONETAG_SCRIPT` | optional shortcut: paste the whole `<script ...>` tag here instead of the 3 above |
-| `VERIFY_EXPIRE` | optional, seconds (default `21600` = 6 h) |
 | `WEBAPP_URL` | optional - leave empty, it is taken from Koyeb automatically. If you add a custom domain, put `https://yourdomain.com` |
 
 ## 4. Check it works

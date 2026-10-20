@@ -15,8 +15,8 @@ from urllib.parse import parse_qsl
 
 from aiohttp import web
 
-from config import TG_BOT_TOKEN, MONETAG_ZONE, MONETAG_SDK, MONETAG_SDK_URL, VERIFY_EXPIRE, MIN_AD_SECONDS, LOGGER
-from database.database import set_verified, set_ad_started, get_ad_started, pop_pending
+from config import TG_BOT_TOKEN, MONETAG_ZONE, MONETAG_SDK, MONETAG_SDK_URL, MIN_AD_SECONDS, LOGGER
+from database.database import clear_ad_started, set_ad_started, get_ad_started, pop_pending
 from helper_func import send_files
 
 verify_routes = web.RouteTableDef()
@@ -78,13 +78,15 @@ async def verify_done(request):
     if not started or time.time() - started < MIN_AD_SECONDS:
         return web.json_response({"ok": False, "error": "ad not fully watched"}, status=400)
 
-    await set_verified(user_id, VERIFY_EXPIRE)
+    await clear_ad_started(user_id)          # one ad unlocks one file link
+    pending = await pop_pending(user_id)
+    if not pending:
+        return web.json_response({"ok": False, "error": "no file request found, open the file link again"}, status=400)
+
     client = request.app["bot"]
     try:
         await client.send_message(user_id, "✅ <b>Vᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ!</b>")
-        pending = await pop_pending(user_id)
-        if pending:
-            await send_files(client, user_id, pending)
+        await send_files(client, user_id, pending)
     except Exception as e:
         LOGGER(__name__).warning(f"verify_done send failed: {e}")
     return web.json_response({"ok": True})

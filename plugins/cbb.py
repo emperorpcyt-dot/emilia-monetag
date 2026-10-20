@@ -36,7 +36,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
     elif data == "how_verify":
         await query.answer(
-            "1. Tap ✅ Verify Now\n2. Watch the ad until the timer ends\n3. Your files arrive automatically\n\nAd not loading? Switch WiFi/mobile data and try again.",
+            "1. Tap ✅ Verify Now\n2. Watch the ad until the timer ends\n3. Your files arrive automatically\n\nAn ad is shown for every file link.\n\nAd not loading? Switch WiFi/mobile data and try again.",
             show_alert=True
         )
     elif data == "close":

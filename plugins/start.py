@@ -6,9 +6,9 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, AD_VERIFY, WEBAPP_URL, VERIFY_EXPIRE, VERIFY_MSG
+from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, AD_VERIFY, WEBAPP_URL, VERIFY_MSG
 from helper_func import subscribed, encode, decode, get_messages, send_files
-from database.database import add_user, del_user, full_userbase, present_user, is_verified, set_pending
+from database.database import add_user, del_user, full_userbase, present_user, set_pending
 
 
 
@@ -28,15 +28,11 @@ async def start_command(client: Client, message: Message):
         except:
             return
 
-        #---------- AD VERIFICATION GATE ----------#
-        if AD_VERIFY and id not in ADMINS and not await is_verified(id):
+        #---------- AD VERIFICATION GATE (ad on EVERY file link) ----------#
+        if AD_VERIFY and id not in ADMINS:
             await set_pending(id, base64_string)
-            hours = VERIFY_EXPIRE // 3600
             await message.reply_text(
-                text = VERIFY_MSG.format(
-                    first = message.from_user.first_name,
-                    hours = f"{hours} hour{'s' if hours != 1 else ''}" if hours else f"{VERIFY_EXPIRE // 60} minutes"
-                ),
+                text = VERIFY_MSG.format(first = message.from_user.first_name),
                 reply_markup = InlineKeyboardMarkup([
                     [InlineKeyboardButton("✅ Vᴇʀɪꜰʏ Nᴏᴡ", web_app=WebAppInfo(url=f"{WEBAPP_URL}/verify"))],
                     [InlineKeyboardButton("❓ Hᴏᴡ ᴛᴏ Vᴇʀɪꜰʏ", callback_data="how_verify")]
