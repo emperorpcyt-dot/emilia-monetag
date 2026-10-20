@@ -11,6 +11,7 @@ database = dbclient[DB_NAME]
 
 
 user_data = database['users']
+verify_data = database['ad_verify']
 
 
 
@@ -33,3 +34,34 @@ async def full_userbase():
 async def del_user(user_id: int):
     user_data.delete_one({'_id': user_id})
     return
+
+
+
+#----------------- AD VERIFICATION -----------------#
+import time
+
+async def is_verified(user_id: int) -> bool:
+    doc = verify_data.find_one({'_id': user_id})
+    return bool(doc) and doc.get('verified_until', 0) > time.time()
+
+async def set_verified(user_id: int, seconds: int):
+    verify_data.update_one(
+        {'_id': user_id},
+        {'$set': {'verified_until': time.time() + seconds}, '$unset': {'ad_started': ''}},
+        upsert=True
+    )
+
+async def set_pending(user_id: int, start_arg: str):
+    """Remember which file link the user opened, so we can send it after the ad."""
+    verify_data.update_one({'_id': user_id}, {'$set': {'pending': start_arg}}, upsert=True)
+
+async def pop_pending(user_id: int):
+    doc = verify_data.find_one_and_update({'_id': user_id}, {'$unset': {'pending': ''}})
+    return doc.get('pending') if doc else None
+
+async def set_ad_started(user_id: int):
+    verify_data.update_one({'_id': user_id}, {'$set': {'ad_started': time.time()}}, upsert=True)
+
+async def get_ad_started(user_id: int):
+    doc = verify_data.find_one({'_id': user_id})
+    return doc.get('ad_started') if doc else None

@@ -116,3 +116,65 @@ def get_readable_time(seconds: int) -> str:
     return up_time
 
 subscribed = filters.create(is_subscribed)
+
+
+#----------------- FILE DELIVERY (used by /start and by ad verification) -----------------#
+from pyrogram.enums import ParseMode as _ParseMode
+from config import CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
+
+
+async def send_files(client, user_id: int, base64_string: str):
+    """Decode a ?start=<code> argument and copy the stored files to the user."""
+    try:
+        string = await decode(base64_string)
+    except Exception:
+        return
+    argument = string.split("-")
+    if len(argument) == 3:
+        try:
+            start = int(int(argument[1]) / abs(client.db_channel.id))
+            end = int(int(argument[2]) / abs(client.db_channel.id))
+        except Exception:
+            return
+        if start <= end:
+            ids = range(start, end + 1)
+        else:
+            ids = []
+            i = start
+            while True:
+                ids.append(i)
+                i -= 1
+                if i < end:
+                    break
+    elif len(argument) == 2:
+        try:
+            ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+        except Exception:
+            return
+    else:
+        return
+
+    temp_msg = await client.send_message(user_id, "Wait Dude...")
+    try:
+        messages = await get_messages(client, ids)
+    except Exception:
+        await client.send_message(user_id, "​​​Tʜᴇʀᴇ ɪꜱ ᴅᴇꜰɪɴɪᴛᴇʟʏ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ​...!")
+        return
+    await temp_msg.delete()
+
+    for msg in messages:
+        if bool(CUSTOM_CAPTION) & bool(msg.document):
+            caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html, filename=msg.document.file_name)
+        else:
+            caption = "" if not msg.caption else msg.caption.html
+
+        reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+        try:
+            await msg.copy(chat_id=user_id, caption=caption, parse_mode=_ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+            await asyncio.sleep(0.5)
+        except FloodWait as e:
+            await asyncio.sleep(e.x)
+            await msg.copy(chat_id=user_id, caption=caption, parse_mode=_ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+        except Exception:
+            pass

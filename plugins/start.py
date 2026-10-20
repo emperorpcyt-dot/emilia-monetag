@@ -2,13 +2,13 @@ import os
 import asyncio
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
-from helper_func import subscribed, encode, decode, get_messages
-from database.database import add_user, del_user, full_userbase, present_user
+from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, AD_VERIFY, WEBAPP_URL, VERIFY_EXPIRE, VERIFY_MSG
+from helper_func import subscribed, encode, decode, get_messages, send_files
+from database.database import add_user, del_user, full_userbase, present_user, is_verified, set_pending
 
 
 
@@ -27,57 +27,26 @@ async def start_command(client: Client, message: Message):
             base64_string = text.split(" ", 1)[1]
         except:
             return
-        string = await decode(base64_string)
-        argument = string.split("-")
-        if len(argument) == 3:
-            try:
-                start = int(int(argument[1]) / abs(client.db_channel.id))
-                end = int(int(argument[2]) / abs(client.db_channel.id))
-            except:
-                return
-            if start <= end:
-                ids = range(start,end+1)
-            else:
-                ids = []
-                i = start
-                while True:
-                    ids.append(i)
-                    i -= 1
-                    if i < end:
-                        break
-        elif len(argument) == 2:
-            try:
-                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-            except:
-                return
-        temp_msg = await message.reply("Wait Dude...")
-        try:
-            messages = await get_messages(client, ids)
-        except:
-            await message.reply_text("​​​Tʜᴇʀᴇ ɪꜱ ᴅᴇꜰɪɴɪᴛᴇʟʏ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ​...!")
+
+        #---------- AD VERIFICATION GATE ----------#
+        if AD_VERIFY and id not in ADMINS and not await is_verified(id):
+            await set_pending(id, base64_string)
+            hours = VERIFY_EXPIRE // 3600
+            await message.reply_text(
+                text = VERIFY_MSG.format(
+                    first = message.from_user.first_name,
+                    hours = f"{hours} hour{'s' if hours != 1 else ''}" if hours else f"{VERIFY_EXPIRE // 60} minutes"
+                ),
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton("✅ Vᴇʀɪꜰʏ Nᴏᴡ", web_app=WebAppInfo(url=f"{WEBAPP_URL}/verify"))],
+                    [InlineKeyboardButton("❓ Hᴏᴡ ᴛᴏ Vᴇʀɪꜰʏ", callback_data="how_verify")]
+                ]),
+                quote = True
+            )
             return
-        await temp_msg.delete()
+        #------------------------------------------#
 
-        for msg in messages:
-
-            if bool(CUSTOM_CAPTION) & bool(msg.document):
-                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
-            else:
-                caption = "" if not msg.caption else msg.caption.html
-
-            if DISABLE_CHANNEL_BUTTON:
-                reply_markup = msg.reply_markup
-            else:
-                reply_markup = None
-
-            try:
-                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
-                await asyncio.sleep(0.5)
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
-            except:
-                pass
+        await send_files(client, id, base64_string)
         return
     else:
         reply_markup = InlineKeyboardMarkup(

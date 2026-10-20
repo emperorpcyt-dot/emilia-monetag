@@ -25,7 +25,7 @@ CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1001929827203"))
 OWNER_ID = int(os.environ.get("OWNER_ID", "1891736799"))
 
 #Port
-PORT = os.environ.get("PORT", "8080")
+PORT = int(os.environ.get("PORT", "8080"))  # Koyeb sets PORT automatically
 
 #Database 
 DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://INDABID:INDABID@cluster0.7x0cv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
@@ -57,6 +57,31 @@ PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "False") == "True" e
 
 #Set true if you want Disable your Channel Posts Share button
 DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True'
+
+#----------------- AD VERIFICATION (Monetag rewarded ads) -----------------#
+# Public HTTPS url of this bot's web server (e.g. https://your-app.koyeb.app)
+# Leave empty to turn the ad verification OFF.
+# On Koyeb this is filled automatically from KOYEB_PUBLIC_DOMAIN, so you can leave it empty there.
+WEBAPP_URL = os.environ.get("WEBAPP_URL", "").strip().rstrip("/")
+if not WEBAPP_URL and os.environ.get("KOYEB_PUBLIC_DOMAIN"):
+    WEBAPP_URL = "https://" + os.environ["KOYEB_PUBLIC_DOMAIN"].strip().rstrip("/")
+if WEBAPP_URL and not WEBAPP_URL.startswith("http"):
+    WEBAPP_URL = "https://" + WEBAPP_URL
+
+# Your Monetag "Telegram Mini App" zone id (only the number, e.g. 1234567)
+MONETAG_ZONE = os.environ.get("MONETAG_ZONE", "")
+
+# How long one ad verification stays valid, in seconds (default 6 hours)
+VERIFY_EXPIRE = int(os.environ.get("VERIFY_EXPIRE", "21600"))
+
+# Minimum seconds between opening the ad and finishing it (anti-cheat)
+MIN_AD_SECONDS = int(os.environ.get("MIN_AD_SECONDS", "8"))
+
+# Turned on only when both values are set
+AD_VERIFY = bool(WEBAPP_URL and MONETAG_ZONE)
+
+VERIFY_MSG = os.environ.get("VERIFY_MESSAGE", "ʜᴇʏ {first} 👋\n\n🔐 <b>Yᴏᴜʀ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ʜᴀꜱ ᴇxᴘɪʀᴇᴅ</b>\n\n1️⃣ Tᴀᴘ <b>✅ Vᴇʀɪꜰʏ Nᴏᴡ</b> ʙᴇʟᴏᴡ\n2️⃣ Wᴀᴛᴄʜ ᴛʜᴇ ꜱʜᴏʀᴛ ᴀᴅ ᴛɪʟʟ ɪᴛ ᴇɴᴅꜱ\n3️⃣ Yᴏᴜʀ ꜰɪʟᴇꜱ ᴡɪʟʟ ʙᴇ ꜱᴇɴᴛ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ\n\n⏳ Vᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜱᴛᴀʏꜱ ᴀᴄᴛɪᴠᴇ ꜰᴏʀ <b>{hours}</b>.\n\n<i>Nᴏᴛᴇ: ɪꜰ ᴛʜᴇ ᴀᴅ ᴅᴏᴇꜱɴ'ᴛ ʟᴏᴀᴅ, ᴄʜᴀɴɢᴇ ʏᴏᴜʀ ɴᴇᴛᴡᴏʀᴋ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ.</i>")
+#--------------------------------------------------------------------------#
 
 BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
 USER_REPLY_TEXT = "​🚫Pʟᴇᴀꜱᴇ ᴅᴏɴ'ᴛ ᴍᴇꜱꜱᴀɢᴇ ᴍᴇ ᴅɪʀᴇᴄᴛʟʏ ɪ ᴀᴍ ᴏɴʟʏ ᴡᴏʀᴋ ꜰᴏʀ​ - @Anime_pirates"

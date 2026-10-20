@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human Verification</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Monetag SDK. __ZONE__ is replaced with MONETAG_ZONE by the server -->
+  <script src="//libtl.com/sdk.js" data-zone="__ZONE__" data-sdk="show___ZONE__"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,sans-serif; min-height:100vh;
+           display:flex; align-items:center; justify-content:center;
+           background:linear-gradient(160deg,#6a5af9,#8e44ad); }
+    .card { background:#fff; color:#111; border-radius:18px; padding:28px 22px; width:86%;
+            max-width:330px; text-align:center; box-shadow:0 10px 40px #0004; }
+    .icon { font-size:52px; }
+    h2 { margin:6px 0 18px; font-size:22px; }
+    button { width:100%; padding:14px; border:0; border-radius:10px; font-size:16px;
+             font-weight:600; cursor:pointer; margin-top:8px; }
+    #go { background:#22c55e; color:#fff; }
+    #close { background:#4b5563; color:#fff; }
+    button:disabled { opacity:.55; }
+    #status { margin-top:14px; font-size:14px; color:#555; min-height:20px; }
+    .spin { display:inline-block; width:14px; height:14px; border:2px solid #bbb;
+            border-top-color:#6a5af9; border-radius:50%; animation:s 1s linear infinite;
+            vertical-align:-2px; margin-right:6px; }
+    @keyframes s { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🔐</div>
+    <h2>Human Verification</h2>
+    <button id="go">✅ Watch ad &amp; verify</button>
+    <button id="close">✖ Close</button>
+    <div id="status">Watch a short ad to unlock your files.</div>
+  </div>
+<script>
+  const ZONE_FN = "show___ZONE__";
+  const tg = window.Telegram.WebApp;
+  tg.ready(); tg.expand();
+
+  const go = document.getElementById("go");
+  const status = document.getElementById("status");
+  document.getElementById("close").onclick = () => tg.close();
+
+  async function post(path) {
+    const r = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData: tg.initData })
+    });
+    return r.json();
+  }
+  function busy(t) { status.innerHTML = '<span class="spin"></span>' + t; }
+
+  if (!tg.initData) {
+    go.disabled = true;
+    status.textContent = "Please open this page from the bot's Verify button.";
+  }
+
+  go.onclick = async () => {
+    go.disabled = true;
+    busy("Loading ad...");
+    try {
+      const s = await post("/api/verify/start");
+      if (!s.ok) throw new Error(s.error);
+
+      if (typeof window[ZONE_FN] !== "function") throw new Error("ad script blocked");
+      await window[ZONE_FN]();          // resolves after the rewarded ad is watched
+
+      busy("Processing...");
+      const res = await post("/api/verify/done");
+      if (res.ok) {
+        status.textContent = "✅ Verified! Your files are being sent...";
+        tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success");
+        setTimeout(() => tg.close(), 1500);
+      } else {
+        status.textContent = "❌ " + (res.error || "Verification failed") + " - try again.";
+        go.disabled = false;
+      }
+    } catch (e) {
+      status.textContent = "❌ Ad failed to load. Change your network & try again.";
+      go.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>

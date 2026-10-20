@@ -37,6 +37,14 @@ class Bot(Client):
         self.LOGGER = LOGGER
 
     async def start(self):
+        # Start the web server first so Koyeb's health check passes while the bot logs in
+        web_app = await web_server()
+        web_app["bot"] = self          # lets the ad-verify routes send files
+        self.web_runner = web.AppRunner(web_app)
+        await self.web_runner.setup()
+        await web.TCPSite(self.web_runner, "0.0.0.0", PORT).start()
+        self.LOGGER(__name__).info(f"Web server running on port {PORT}")
+
         await super().start()
         usr_bot_me = await self.get_me()
         self.uptime = datetime.now()
@@ -89,12 +97,16 @@ class Bot(Client):
 ╚═╝░░╚═╝╚═╝░░╚══╝╚═╝╚═╝░░░░░╚═╝╚══════╝╚═╝░░╚═╝░╚═════╝░╚═╝░░╚══╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝╚═════╝░
                                           """)
         self.username = usr_bot_me.username
-        #web-response
-        app = web.AppRunner(await web_server())
-        await app.setup()
-        bind_address = "0.0.0.0"
-        await web.TCPSite(app, bind_address, PORT).start()
+        from config import AD_VERIFY, WEBAPP_URL
+        if AD_VERIFY:
+            self.LOGGER(__name__).info(f"Ad verification ON  ->  {WEBAPP_URL}/verify")
+        else:
+            self.LOGGER(__name__).info("Ad verification OFF (set MONETAG_ZONE and WEBAPP_URL to enable)")
 
     async def stop(self, *args):
         await super().stop()
+        try:
+            await self.web_runner.cleanup()
+        except Exception:
+            pass
         self.LOGGER(__name__).info("Bot stopped.")
