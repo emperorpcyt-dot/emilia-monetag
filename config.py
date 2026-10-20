@@ -68,8 +68,24 @@ if not WEBAPP_URL and os.environ.get("KOYEB_PUBLIC_DOMAIN"):
 if WEBAPP_URL and not WEBAPP_URL.startswith("http"):
     WEBAPP_URL = "https://" + WEBAPP_URL
 
-# Your Monetag "Telegram Mini App" zone id (only the number, e.g. 1234567)
-MONETAG_ZONE = os.environ.get("MONETAG_ZONE", "")
+# Monetag SDK settings - copy them from the script Monetag gives you:
+#   <script src='//libtl.com/sdk.js' data-zone='10396377' data-sdk='show_10396377'></script>
+#                 ^ MONETAG_SDK_URL            ^ MONETAG_ZONE          ^ MONETAG_SDK
+MONETAG_ZONE = os.environ.get("MONETAG_ZONE", "10396377").strip()
+MONETAG_SDK = os.environ.get("MONETAG_SDK", "").strip() or f"show_{MONETAG_ZONE}"
+MONETAG_SDK_URL = os.environ.get("MONETAG_SDK_URL", "//libtl.com/sdk.js").strip()
+
+# Shortcut: you can paste the WHOLE <script ...> tag into MONETAG_SCRIPT instead,
+# and the zone / sdk / url are read from it automatically.
+MONETAG_SCRIPT = os.environ.get("MONETAG_SCRIPT", "").strip()
+if MONETAG_SCRIPT:
+    import re as _re
+    _z = _re.search(r"data-zone=['\"]?(\d+)", MONETAG_SCRIPT)
+    _s = _re.search(r"data-sdk=['\"]?([\w$]+)", MONETAG_SCRIPT)
+    _u = _re.search(r"src=['\"]?([^'\"\s>]+)", MONETAG_SCRIPT)
+    if _z: MONETAG_ZONE = _z.group(1)
+    MONETAG_SDK = _s.group(1) if _s else f"show_{MONETAG_ZONE}"
+    if _u: MONETAG_SDK_URL = _u.group(1)
 
 # How long one ad verification stays valid, in seconds (default 6 hours)
 VERIFY_EXPIRE = int(os.environ.get("VERIFY_EXPIRE", "21600"))

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Human Verification</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Monetag SDK. __ZONE__ is replaced with MONETAG_ZONE by the server -->
-  <script src="//libtl.com/sdk.js" data-zone="__ZONE__" data-sdk="show___ZONE__"></script>
+  <!-- Monetag SDK: values come from MONETAG_SDK_URL / MONETAG_ZONE / MONETAG_SDK -->
+  <script src="__SDK_URL__" data-zone="__ZONE__" data-sdk="__SDK__"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin:0; font-family:system-ui,-apple-system,sans-serif; min-height:100vh;
@@ -37,7 +37,7 @@
     <div id="status">Watch a short ad to unlock your files.</div>
   </div>
 <script>
-  const ZONE_FN = "show___ZONE__";
+  const ZONE_FN = "__SDK__";
   const tg = window.Telegram.WebApp;
   tg.ready(); tg.expand();
 

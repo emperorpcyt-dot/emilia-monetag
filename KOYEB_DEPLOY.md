@@ -28,7 +28,10 @@ Upload this folder to a **private** GitHub repo.
 | `DATABASE_NAME` | e.g. `Emilia` |
 | `FORCESUB_CHANNEL` / `FORCESUB_CHANNEL2` | channel ids, or `0` to disable |
 | `PORT` | `8080` |
-| `MONETAG_ZONE` | your Monetag Telegram Mini App zone id (number only) |
+| `MONETAG_ZONE` | zone id, e.g. `10396377` (the `data-zone` value) |
+| `MONETAG_SDK` | SDK function, e.g. `show_10396377` (the `data-sdk` value) |
+| `MONETAG_SDK_URL` | optional, script link (default `//libtl.com/sdk.js`) |
+| `MONETAG_SCRIPT` | optional shortcut: paste the whole `<script ...>` tag here instead of the 3 above |
 | `VERIFY_EXPIRE` | optional, seconds (default `21600` = 6 h) |
 | `WEBAPP_URL` | optional - leave empty, it is taken from Koyeb automatically. If you add a custom domain, put `https://yourdomain.com` |
 

@@ -15,7 +15,7 @@ from urllib.parse import parse_qsl
 
 from aiohttp import web
 
-from config import TG_BOT_TOKEN, MONETAG_ZONE, VERIFY_EXPIRE, MIN_AD_SECONDS, LOGGER
+from config import TG_BOT_TOKEN, MONETAG_ZONE, MONETAG_SDK, MONETAG_SDK_URL, VERIFY_EXPIRE, MIN_AD_SECONDS, LOGGER
 from database.database import set_verified, set_ad_started, get_ad_started, pop_pending
 from helper_func import send_files
 
@@ -49,7 +49,10 @@ def check_init_data(init_data):
 @verify_routes.get("/verify")
 async def verify_page(request):
     with open(_HTML_PATH, encoding="utf-8") as f:
-        html = f.read().replace("__ZONE__", MONETAG_ZONE)
+        html = (f.read()
+                .replace("__SDK_URL__", MONETAG_SDK_URL)
+                .replace("__ZONE__", MONETAG_ZONE)
+                .replace("__SDK__", MONETAG_SDK))
     return web.Response(text=html, content_type="text/html")
 
 
