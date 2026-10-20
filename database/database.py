@@ -44,13 +44,23 @@ async def clear_ad_started(user_id: int):
     """One ad = one unlock: forget the ad start so it can't be reused."""
     verify_data.update_one({'_id': user_id}, {'$unset': {'ad_started': ''}})
 
-async def set_pending(user_id: int, start_arg: str):
-    """Remember which file link the user opened, so we can send it after the ad."""
-    verify_data.update_one({'_id': user_id}, {'$set': {'pending': start_arg}}, upsert=True)
+async def set_pending(user_id: int, start_arg: str, verify_msg_id: int = None):
+    """Remember which file link the user opened (and the ad message we sent),
+    so we can send the files and delete the ad message after the ad.
+    Returns the PREVIOUS ad message id (if any) so it can be deleted too."""
+    old = verify_data.find_one_and_update(
+        {'_id': user_id},
+        {'$set': {'pending': start_arg, 'verify_msg': verify_msg_id}},
+        upsert=True
+    )
+    return old.get('verify_msg') if old else None
 
 async def pop_pending(user_id: int):
-    doc = verify_data.find_one_and_update({'_id': user_id}, {'$unset': {'pending': ''}})
-    return doc.get('pending') if doc else None
+    """Returns (start_arg, verify_msg_id) and clears them."""
+    doc = verify_data.find_one_and_update({'_id': user_id}, {'$unset': {'pending': '', 'verify_msg': ''}})
+    if not doc:
+        return None, None
+    return doc.get('pending'), doc.get('verify_msg')
 
 async def set_ad_started(user_id: int):
     verify_data.update_one({'_id': user_id}, {'$set': {'ad_started': time.time()}}, upsert=True)

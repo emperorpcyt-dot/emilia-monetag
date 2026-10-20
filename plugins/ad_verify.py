@@ -79,11 +79,17 @@ async def verify_done(request):
         return web.json_response({"ok": False, "error": "ad not fully watched"}, status=400)
 
     await clear_ad_started(user_id)          # one ad unlocks one file link
-    pending = await pop_pending(user_id)
+    pending, verify_msg_id = await pop_pending(user_id)
     if not pending:
         return web.json_response({"ok": False, "error": "no file request found, open the file link again"}, status=400)
 
     client = request.app["bot"]
+    # delete the "Watch a short ad..." message now that the ad is done
+    if verify_msg_id:
+        try:
+            await client.delete_messages(user_id, verify_msg_id)
+        except Exception:
+            pass
     try:
         await client.send_message(user_id, "✅ <b>Vᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ!</b>")
         await send_files(client, user_id, pending)

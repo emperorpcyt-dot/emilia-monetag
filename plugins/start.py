@@ -30,8 +30,7 @@ async def start_command(client: Client, message: Message):
 
         #---------- AD VERIFICATION GATE (ad on EVERY file link) ----------#
         if AD_VERIFY and id not in ADMINS:
-            await set_pending(id, base64_string)
-            await message.reply_text(
+            verify_msg = await message.reply_text(
                 text = VERIFY_MSG.format(first = message.from_user.first_name),
                 reply_markup = InlineKeyboardMarkup([
                     [InlineKeyboardButton("✅ Vᴇʀɪꜰʏ Nᴏᴡ", web_app=WebAppInfo(url=f"{WEBAPP_URL}/verify"))],
@@ -39,6 +38,13 @@ async def start_command(client: Client, message: Message):
                 ]),
                 quote = True
             )
+            old_msg_id = await set_pending(id, base64_string, verify_msg.id)
+            # user opened a new link without watching -> remove the older ad message
+            if old_msg_id and old_msg_id != verify_msg.id:
+                try:
+                    await client.delete_messages(id, old_msg_id)
+                except Exception:
+                    pass
             return
         #------------------------------------------#
 
